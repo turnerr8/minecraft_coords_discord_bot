@@ -6,7 +6,7 @@ class DbHandler:
     def add(self, label: str, x:int, y:int, z:int, createdBy:str):
         try:
             #connect to DB
-            connection = sqlite3.connect('coords.db')
+            connection = sqlite3.connect('data/coords.db')
             cursor = connection.cursor()
             print('connection successful')
 
@@ -30,7 +30,7 @@ class DbHandler:
     def remove(self, label, createdBy):
         try:
            #connect to DB
-            connection = sqlite3.connect('coords.db')
+            connection = sqlite3.connect('data/coords.db')
             cursor = connection.cursor()
             print('connection successful')
 
@@ -57,7 +57,7 @@ class DbHandler:
     def howManyRows(self, label, createdBy):
         try:
             #connect to DB
-            connection = sqlite3.connect('coords.db')
+            connection = sqlite3.connect('data/coords.db')
             cursor = connection.cursor()
             print('connection successful')
 
@@ -76,7 +76,7 @@ class DbHandler:
     def list(self): 
         try:
             #connect to DB
-            connection = sqlite3.connect('coords.db')
+            connection = sqlite3.connect('data/coords.db')
             cursor = connection.cursor()
             print('connection successful')
 
