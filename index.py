@@ -2,7 +2,9 @@ import discord
 import os
 import logging
 import sqlite3
-
+import signal
+import sys
+import atexit
 
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -12,6 +14,21 @@ from dbHandler import DbHandler
 load_dotenv()
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 db = DbHandler()
+
+def shutdown_handler(signum, frame):
+    print('shuting down, closing db...')
+    db.close()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, shutdown_handler) #ctrl-c
+signal.signal(signal.SIGTERM, shutdown_handler) #docker stop
+
+@atexit.register
+def cleanup():
+    try:
+        db.close()
+    except Exception:
+        pass
 
 class Client(commands.Bot):
     async def on_ready(self):
@@ -23,6 +40,11 @@ class Client(commands.Bot):
             print(f'Synced {len(synced)} commands to guild {guild.id}')
         except Exception as e:
             print(f'Error syncing commands: {e}')
+
+    async def close(self):
+        print('bot shutting down, Goodbye')
+        db.close()
+        await super().close()
 
     async def on_message(self, message):
         if message.author == client.user:
@@ -79,6 +101,20 @@ async def rm(interaction: discord.Interaction, label:str):
     print(f'removing {label}')
     res=db.remove(label, interaction.user.name)
     await interaction.response.send_message(res)
+
+@client.tree.command(name="man", description="minecraft coord bot manual", guild=GUILD_ID)
+async def man(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        """
+        ***Minecraft Coordinate Saver Manual***\n
+        This bot contains 4 commands [add, rm, ls, man]\n
+        **add:** adds a new coordinate to the database\n
+        use: '\\add [label] [x] [y] [z]'  :  responds 1 on successful add\n
+        **rm:** removes coordinate from database _if_ you created it\n
+        use: '\\rm [label]  :  responds 'removed [label] created by [creator] on successful removal\n
+
+        """
+    )
 
 
 

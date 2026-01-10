@@ -2,23 +2,27 @@ import sqlite3
 
 class DbHandler:
 
+    def __init__(self, db_path="data/coords.db"):
+        self.connection = sqlite3.connect(db_path, check_same_thread=False)
+        self.cursor = self.connection.cursor()
+        print(f'connection to {db_path} successful!')
+        self._init_db()
+
+    def _init_db(self):
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS coords (id INTEGER PRIMARY KEY, label TEXT, x INT, y INT, z INT, created_by TEXT)")
+        self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_coords_label_creator ON coords (label, created_by)")
+        self.connection.commit()
+
 
     def add(self, label: str, x:int, y:int, z:int, createdBy:str):
         try:
-            #connect to DB
-            connection = sqlite3.connect('data/coords.db')
-            cursor = connection.cursor()
-            print('connection successful')
-
-            #if table does not exist, create one 
-            cursor.execute("CREATE TABLE IF NOT EXISTS coords (id INTEGER PRIMARY KEY, label TEXT, x INT, y INT, z INT, created_by TEXT)")
-
+           
             #insert query
             insertQuery = "INSERT INTO coords (label, x, y, z, created_by) VALUES (?, ?, ?, ?, ?)"
-            cursor.execute(insertQuery, (label, x, y, z, createdBy))
+            self.cursor.execute(insertQuery, (label, x, y, z, createdBy))
 
             #save changes
-            connection.commit()
+            self.connection.commit()
             print('record saved!')
             return 1
             
@@ -29,14 +33,7 @@ class DbHandler:
 
     def remove(self, label, createdBy):
         try:
-           #connect to DB
-            connection = sqlite3.connect('data/coords.db')
-            cursor = connection.cursor()
-            print('connection successful')
-
-            #if table does not exist, create one 
-            cursor.execute("CREATE TABLE IF NOT EXISTS coords (id INTEGER PRIMARY KEY, label TEXT, x INT, y INT, z INT, created_by TEXT)")
-
+          
             #if the row doesnt exist return and send error message
             amount = self.howManyRows(label, createdBy)
             
@@ -45,9 +42,9 @@ class DbHandler:
                 return 0
 
             removeQuery = "DELETE FROM coords WHERE label=(?) AND created_by=(?)"
-            cursor.execute(removeQuery, (label, createdBy))
+            self.cursor.execute(removeQuery, (label, createdBy))
 
-            connection.commit()
+            self.connection.commit()
             return f'Removed {label} created by {createdBy}'
             
         except sqlite3.Error as e:
@@ -56,36 +53,23 @@ class DbHandler:
 
     def howManyRows(self, label, createdBy):
         try:
-            #connect to DB
-            connection = sqlite3.connect('data/coords.db')
-            cursor = connection.cursor()
-            print('connection successful')
-
-            #if table does not exist, create one 
-            cursor.execute("CREATE TABLE IF NOT EXISTS coords (id INTEGER PRIMARY KEY, label TEXT, x INT, y INT, z INT, created_by TEXT)")
-
-            selectQuery = "SELECT * FROM coords WHERE label=(?) AND created_by=(?)"
-            cursor.execute(selectQuery, (label, createdBy))
-            rows = cursor.fetchall()
-            print(len(rows))
-            return 1
+            
+            selectQuery = "SELECT COUNT(*) FROM coords WHERE label=(?) AND created_by=(?)"
+            self.cursor.execute(selectQuery, (label, createdBy))
+            return self.cursor.fetchone()[0]
             
         except sqlite3.Error as e:
             print(f'error occured: {e}')
             return 0
     def list(self): 
         try:
-            #connect to DB
-            connection = sqlite3.connect('data/coords.db')
-            cursor = connection.cursor()
-            print('connection successful')
-
-            #if table does not exist, create one 
-            cursor.execute("CREATE TABLE IF NOT EXISTS coords (id INTEGER PRIMARY KEY, label TEXT, x INT, y INT, z INT, created_by TEXT)")
-
-            selectQuery = "SELECT * FROM coords"
-            cursor.execute(selectQuery)
-            res= cursor.fetchall()
+           
+            self.cursor.execute("SELECT label, x, y, z, created_by FROM coords")
+            rows= self.cursor.fetchall()
+            return "\n".join(
+                f"**{label}**: x:{x} y:{y} z:{z} ({created_by})"
+                for label, x, y, z, created_by in rows
+            )
             concatStr=''
             for line in res:
                 concatStr += f'**{line[1]}**: x:{line[2]} y:{line[3]}, z:{line[4]}    ({line[5]})\n'
@@ -95,9 +79,3 @@ class DbHandler:
         except sqlite3.Error as e:
             print(f'error occured: {e}')
             return 0
-#add("hello", 0, 0,0,"ryan")
-# add("hello", 0, 0,0,"ryan")
-
-# remove('hello', 'ryan')
-#DbHandler.howManyRows('hello', 'ryan')
-#DbHandler.list()
