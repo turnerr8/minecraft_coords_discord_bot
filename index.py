@@ -102,6 +102,12 @@ async def rm(interaction: discord.Interaction, label:str):
     res=db.remove(label, interaction.user.name)
     await interaction.response.send_message(res)
 
+@client.tree.command(name="find", description="lists all coordinates matching [label]", guild=GUILD_ID)
+async def find(interaction: discord.Interaction, label:str):
+    print(f'finding {label}')
+    res= db.find(label)
+    await interaction.response.send_message(res)    
+
 @client.tree.command(name="man", description="minecraft coord bot manual", guild=GUILD_ID)
 async def man(interaction: discord.Interaction):
     await interaction.response.send_message(
@@ -112,7 +118,9 @@ async def man(interaction: discord.Interaction):
         use: '\\add [label] [x] [y] [z]'  :  responds 1 on successful add\n
         **rm:** removes coordinate from database _if_ you created it\n
         use: '\\rm [label]  :  responds 'removed [label] created by [creator] on successful removal\n
-
+        **ls:** lists all active coordinates\n
+        **find:** finds all entries with the matching label\n
+        use: \\find[label]  :  responds with all entries matching label. If no entries exists, responds 'no matching entries'
         """
     )
 

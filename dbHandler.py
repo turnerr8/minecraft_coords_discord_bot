@@ -13,6 +13,8 @@ class DbHandler:
         self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_coords_label_creator ON coords (label, created_by)")
         self.connection.commit()
 
+    def close(self):
+        self.connection.close()
 
     def add(self, label: str, x:int, y:int, z:int, createdBy:str):
         try:
@@ -70,12 +72,23 @@ class DbHandler:
                 f"**{label}**: x:{x} y:{y} z:{z} ({created_by})"
                 for label, x, y, z, created_by in rows
             )
-            concatStr=''
-            for line in res:
-                concatStr += f'**{line[1]}**: x:{line[2]} y:{line[3]}, z:{line[4]}    ({line[5]})\n'
-
-            print(concatStr)
-            return concatStr
+            
         except sqlite3.Error as e:
             print(f'error occured: {e}')
             return 0
+        
+    #find all matching entries
+    def find(self, label:str):
+        try:
+            query = "SELECT label, x, y, z, created_by FROM coords WHERE label=(?)"
+
+            self.cursor.execute(query, (label,))
+            rows = self.cursor.fetchall()
+            if len(rows) < 1:
+                return "no entries matching that label"
+            return "\n".join(
+                f"**{label}**: x:{x} y:{y} z:{z} ({created_by})"
+                for label, x, y, z, created_by in rows
+            )
+        except sqlite3.Error as e:
+            print(f'{e}')
