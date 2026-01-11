@@ -25,8 +25,8 @@ class DbHandler:
 
             #save changes
             self.connection.commit()
-            print('record saved!')
-            return 1
+            return 'record saved!'
+            
             
         except sqlite3.Error as e:
             print(f'error occured: {e}')
@@ -40,8 +40,8 @@ class DbHandler:
             amount = self.howManyRows(label, createdBy)
             
             if (amount < 1):
-                print("looks like there isn't an entry like this!")
-                return 0
+                return "looks like there isn't an entry like this or you don't have permission to remove it."
+                
 
             removeQuery = "DELETE FROM coords WHERE label=(?) AND created_by=(?)"
             self.cursor.execute(removeQuery, (label, createdBy))
