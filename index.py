@@ -65,18 +65,18 @@ GUILD_ID=discord.Object(id=os.getenv('SERVER_ID'))
 #slash commands
 
 #easy pong test
-@client.tree.command(name="ping", description="Responds with pong!", guild=GUILD_ID)
+@client.tree.command(name="ping", description="Responds with pong!")
 async def ping(interaction: discord.Interaction):
     await interaction.response.send_message("Pong!")
 
 #practice with passing in variables
-@client.tree.command(name='printer', description='print word x times', guild=GUILD_ID)
+@client.tree.command(name='printer', description='print word x times')
 async def printer(interaction: discord.Interaction, word: str, x: int):
     await interaction.response.send_message(word+ " " + str(x))
 
 
 #minecraft coords
-@client.tree.command(name='add', description='Add a coordinate location with tag.', guild=GUILD_ID)
+@client.tree.command(name='add', description='Add a coordinate location with tag.')
 async def add(interaction: discord.Interaction, label:str, x:int, y:int, z:int):
     print(f'adding {label, x, y, z, interaction.user.name}')
     name = interaction.user.name
@@ -88,7 +88,7 @@ async def add(interaction: discord.Interaction, label:str, x:int, y:int, z:int):
     # else:
     #     await interaction.response.send_message(f"there was an issue adding this coordinate to the database!")
     
-@client.tree.command(name="ls", description='lists out all saved coordinates', guild=GUILD_ID)
+@client.tree.command(name="ls", description='lists out all saved coordinates')
 async def ls(interaction: discord.Interaction):
     res = db.list()
     if res==0:
@@ -96,19 +96,19 @@ async def ls(interaction: discord.Interaction):
     await interaction.response.send_message(res)
 
 #rm rows
-@client.tree.command(name="rm", description="remove coordinates IF you created them", guild=GUILD_ID)
+@client.tree.command(name="rm", description="remove coordinates IF you created them")
 async def rm(interaction: discord.Interaction, label:str):
     print(f'removing {label}')
     res=db.remove(label, interaction.user.name)
     await interaction.response.send_message(res)
 
-@client.tree.command(name="find", description="lists all coordinates matching [label]", guild=GUILD_ID)
+@client.tree.command(name="find", description="lists all coordinates matching [label]")
 async def find(interaction: discord.Interaction, label:str):
     print(f'finding {label}')
     res= db.find(label)
     await interaction.response.send_message(res)    
 
-@client.tree.command(name="man", description="minecraft coord bot manual", guild=GUILD_ID)
+@client.tree.command(name="man", description="minecraft coord bot manual")
 async def man(interaction: discord.Interaction):
     await interaction.response.send_message(
         """
